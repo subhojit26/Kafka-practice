@@ -2,6 +2,7 @@ package com.learnKafka.library_events_producer_v2.controller;
 
 import com.learnKafka.library_events_producer_v2.domain.LibraryEvent;
 import com.learnKafka.library_events_producer_v2.domain.LibraryEventType;
+import com.learnKafka.library_events_producer_v2.service.LibraryEventService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class LibraryEventsController {
 
     private static final Logger log = LoggerFactory.getLogger(LibraryEventsController.class);
+
+    private final LibraryEventService libraryEventService;
+
+    public LibraryEventsController(LibraryEventService libraryEventService) {
+        this.libraryEventService = libraryEventService;
+    }
 
     /**
      * POST /v1/libraryevent
@@ -43,10 +50,10 @@ public class LibraryEventsController {
                     "Only ADD event type is supported for POST");
         }
 
-        // TODO (Layer 2 - Service/Producer): delegate publishing to
-        // LibraryEventService.createLibraryEvent(libraryEvent).
+        // Delegate business rule enforcement + Kafka publishing to the service layer.
+        LibraryEvent created = libraryEventService.createLibraryEvent(libraryEvent);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }
 
