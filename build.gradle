@@ -30,7 +30,7 @@ dependencies {
 	// NOTE: This version must align with jackson-annotations:2.20 as constrained
 	// by the Jackson 3.x BOM used by Spring Boot 4. Do not bump independently.
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.2'
-	//developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 	testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
