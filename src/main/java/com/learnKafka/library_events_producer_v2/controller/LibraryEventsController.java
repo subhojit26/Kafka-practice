@@ -1,0 +1,52 @@
+package com.learnKafka.library_events_producer_v2.controller;
+
+import com.learnKafka.library_events_producer_v2.domain.LibraryEvent;
+import com.learnKafka.library_events_producer_v2.domain.LibraryEventType;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+/**
+ * REST controller exposing the Library Events Producer API.
+ */
+@RestController
+@RequestMapping("/v1")
+public class LibraryEventsController {
+
+    private static final Logger log = LoggerFactory.getLogger(LibraryEventsController.class);
+
+    /**
+     * POST /v1/libraryevent
+     * <p>
+     * Accepts a new library event. The request body is validated with {@code @Valid},
+     * and the business rule {@code eventType == ADD} is enforced (otherwise 400).
+     *
+     * @param libraryEvent the incoming library event payload
+     * @return 201 Created with the full library event payload
+     */
+    @PostMapping("/libraryevent")
+    public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent) {
+
+        log.info("Received POST libraryEvent: {}", libraryEvent);
+
+        // Business rule: POST is only allowed for ADD events.
+        if (libraryEvent.eventType() != LibraryEventType.ADD) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Only ADD event type is supported for POST");
+        }
+
+        // TODO (Layer 2 - Service/Producer): delegate publishing to
+        // LibraryEventService.createLibraryEvent(libraryEvent).
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
+    }
+}
+
