@@ -42,5 +42,31 @@ public class LibraryEventService {
         libraryEventProducer.publishLibraryEvent(event);
         return event;
     }
+
+    /**
+     * Handles the update (UPDATE) flow for a library event.
+     * <p>
+     * Enforces the rules that the incoming event must have
+     * {@code eventType == UPDATE} and a non-null {@code libraryEventId},
+     * then delegates publishing to Kafka.
+     *
+     * @param event the incoming library event
+     * @return the same event after publishing has been initiated
+     * @throws IllegalArgumentException if the event type is not UPDATE or the id is null
+     */
+    public LibraryEvent updateLibraryEvent(LibraryEvent event) {
+
+        if (event.eventType() != LibraryEventType.UPDATE) {
+            throw new IllegalArgumentException("Only UPDATE event type is supported for update");
+        }
+
+        if (event.libraryEventId() == null) {
+            throw new IllegalArgumentException("libraryEventId must not be null for update");
+        }
+
+        log.info("Updating libraryEvent with id={}", event.libraryEventId());
+        libraryEventProducer.publishLibraryEvent(event);
+        return event;
+    }
 }
 
