@@ -16,7 +16,7 @@ public final class AppConstants {
     public static final String LIBRARY_EVENT_PATH = API_BASE_PATH + "/libraryevent";
 
     /** Config key for the Kafka topic name. */
-    public static final String KAFKA_TOPIC_PROPERTY = "app.kafka.topic";
+    public static final String KAFKA_TOPIC_PROPERTY = "spring.kafka.template.default-topic";
 
     /** Default Kafka topic used when none is configured. */
     public static final String DEFAULT_KAFKA_TOPIC = "library-events";

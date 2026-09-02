@@ -85,6 +85,20 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), List.of(), request);
     }
 
+    /**
+     * Catch-all handler for any exception not handled by a more specific handler.
+     * Returns a 500 without leaking internal details in the message.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleGenericException(Exception ex,
+                                                           HttpServletRequest request) {
+        log.error("Unexpected error processing request {}: {}",
+                request.getRequestURI(), ex.getMessage(), ex);
+        return build(HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred. Please try again later.",
+                List.of(), request);
+    }
+
     private ResponseEntity<ApiError> build(HttpStatus status, String message,
                                            List<String> errors, HttpServletRequest request) {
         ApiError body = new ApiError(

@@ -14,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Publishes {@link LibraryEvent} messages to Kafka.
  * <p>
- * The topic name is read from the YAML property {@code app.kafka.topic} and the
- * message key is the {@code libraryEventId}.
+ * The topic name is read from the YAML property {@code spring.kafka.template.default-topic}
+ * and the message key is the {@code libraryEventId}.
  */
 @Component
 public class LibraryEventProducer {
@@ -27,7 +27,7 @@ public class LibraryEventProducer {
     private final String topic;
 
     public LibraryEventProducer(KafkaTemplate<Long, LibraryEvent> kafkaTemplate,
-                                @Value("${app.kafka.topic}") String topic) {
+                                @Value("${spring.kafka.template.default-topic}") String topic) {
         this.kafkaTemplate = kafkaTemplate;
         this.topic = topic;
     }
