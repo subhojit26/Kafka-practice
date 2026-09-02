@@ -1,0 +1,6 @@
+# DEV environment overrides
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+
+

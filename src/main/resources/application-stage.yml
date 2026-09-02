@@ -1,0 +1,7 @@
+# STAGE environment overrides
+spring:
+  kafka:
+    # Externalize via env vars in real deployments, e.g.:
+    #   KAFKA_BOOTSTRAP_SERVERS=stage-broker-1:9092,stage-broker-2:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:stage-kafka:9092}
+

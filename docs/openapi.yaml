@@ -1,0 +1,247 @@
+openapi: 3.1.0
+info:
+  title: Library Events Producer API
+  description: >
+    REST API that accepts Library Events and publishes them to Kafka.
+
+    - `POST /v1/libraryevent` creates a new event (`eventType == ADD`).
+    - `PUT /v1/libraryevent` updates an existing event (`eventType == UPDATE`
+      and a non-null `libraryEventId`).
+
+    On any handled failure the API returns a consistent `ApiError` JSON body.
+  version: 0.0.1-SNAPSHOT
+  contact:
+    name: learnKafka
+  license:
+    name: Apache-2.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Library Events
+    description: Create and update library events published to Kafka
+
+paths:
+  /v1/libraryevent:
+    post:
+      tags: [Library Events]
+      summary: Create a new library event (ADD)
+      operationId: postLibraryEvent
+      description: >
+        Accepts a new library event. The body is validated and the business rule
+        `eventType == ADD` is enforced. On success the event is published to the
+        Kafka topic and echoed back.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryEvent'
+            examples:
+              validAdd:
+                summary: Valid ADD payload
+                value:
+                  libraryEventId: null
+                  eventType: ADD
+                  book:
+                    bookId: 123
+                    bookName: Kafka Basics
+                    bookAuthor: John Doe
+      responses:
+        '201':
+          description: Created — event accepted and published to Kafka
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryEvent'
+        '400':
+          description: >
+            Bad Request — validation failure, malformed body, or a business-rule
+            violation (e.g. `eventType != ADD`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                validationError:
+                  summary: Missing eventType
+                  value:
+                    timestamp: 2026-08-30T10:15:30.123Z
+                    status: 400
+                    error: Bad Request
+                    message: eventType - eventType must not be null
+                    errors: ["eventType - eventType must not be null"]
+                    path: /v1/libraryevent
+                businessRule:
+                  summary: Wrong event type for POST
+                  value:
+                    timestamp: 2026-08-30T10:15:30.123Z
+                    status: 400
+                    error: Bad Request
+                    message: Only ADD event type is supported for POST
+                    errors: []
+                    path: /v1/libraryevent
+        '500':
+          description: Internal Server Error — failure while publishing to Kafka
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+    put:
+      tags: [Library Events]
+      summary: Update an existing library event (UPDATE)
+      operationId: putLibraryEvent
+      description: >
+        Accepts an update to an existing library event. The body is validated and
+        the business rules `eventType == UPDATE` and a non-null `libraryEventId`
+        are enforced. On success the event is published to Kafka and echoed back.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryEvent'
+            examples:
+              validUpdate:
+                summary: Valid UPDATE payload
+                value:
+                  libraryEventId: 1
+                  eventType: UPDATE
+                  book:
+                    bookId: 123
+                    bookName: Kafka Basics
+                    bookAuthor: John Doe
+      responses:
+        '200':
+          description: OK — event accepted and published to Kafka
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryEvent'
+        '400':
+          description: >
+            Bad Request — validation failure, malformed body, missing
+            `libraryEventId`, or `eventType != UPDATE`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                missingId:
+                  summary: Missing libraryEventId on PUT
+                  value:
+                    timestamp: 2026-08-30T10:15:30.123Z
+                    status: 400
+                    error: Bad Request
+                    message: libraryEventId must not be null for update
+                    errors: []
+                    path: /v1/libraryevent
+                wrongType:
+                  summary: Wrong event type for PUT
+                  value:
+                    timestamp: 2026-08-30T10:15:30.123Z
+                    status: 400
+                    error: Bad Request
+                    message: Only UPDATE event type is supported for PUT
+                    errors: []
+                    path: /v1/libraryevent
+        '500':
+          description: Internal Server Error — failure while publishing to Kafka
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+components:
+  schemas:
+    LibraryEventType:
+      type: string
+      description: Type of the library event.
+      enum:
+        - ADD
+        - UPDATE
+
+    Book:
+      type: object
+      description: A book associated with a library event.
+      required:
+        - bookId
+        - bookName
+        - bookAuthor
+      properties:
+        bookId:
+          type: integer
+          format: int32
+          description: Unique identifier of the book (required).
+          example: 123
+        bookName:
+          type: string
+          minLength: 1
+          description: Title of the book (required, non-blank).
+          example: Kafka Basics
+        bookAuthor:
+          type: string
+          minLength: 1
+          description: Author of the book (required, non-blank).
+          example: John Doe
+
+    LibraryEvent:
+      type: object
+      description: A library event to be published to Kafka.
+      required:
+        - eventType
+        - book
+      properties:
+        libraryEventId:
+          type: integer
+          format: int32
+          nullable: true
+          description: >
+            Identifier of the event. May be null for ADD; required (non-null)
+            for UPDATE.
+          example: 1
+        eventType:
+          $ref: '#/components/schemas/LibraryEventType'
+        book:
+          $ref: '#/components/schemas/Book'
+
+    ApiError:
+      type: object
+      description: Standard error response body returned for all handled exceptions.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred (ISO-8601).
+          example: 2026-08-30T10:15:30.123Z
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code.
+          example: 400
+        error:
+          type: string
+          description: The HTTP status reason phrase.
+          example: Bad Request
+        message:
+          type: string
+          description: >
+            The actual, human-readable error message. For multiple validation
+            failures this is a sorted, comma-joined summary.
+          example: book.bookId - book.bookId must not be null
+        errors:
+          type: array
+          description: >
+            Per-field validation errors (empty for non-validation failures).
+          items:
+            type: string
+          example:
+            - book.bookId - book.bookId must not be null
+        path:
+          type: string
+          description: The request path that produced the error.
+          example: /v1/libraryevent
+

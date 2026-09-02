@@ -1,0 +1,9 @@
+# TEST profile — used by integration tests with an embedded Kafka broker.
+# @EmbeddedKafka publishes the broker addresses into the property
+# 'spring.embedded.kafka.brokers'; we point the app's Kafka clients at it.
+spring:
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+    consumer:
+      auto-offset-reset: earliest
+

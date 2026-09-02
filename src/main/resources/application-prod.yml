@@ -1,0 +1,15 @@
+# PROD environment overrides
+spring:
+  kafka:
+    # Externalize via env vars in real deployments, e.g.:
+    #   KAFKA_BOOTSTRAP_SERVERS=prod-broker-1:9092,prod-broker-2:9092,prod-broker-3:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:prod-kafka:9092}
+    producer:
+      # Prod-safe hardening; overrides common defaults where needed.
+      acks: all
+      retries: 2147483647
+      properties:
+        enable:
+          idempotence: true
+
+

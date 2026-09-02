@@ -4,8 +4,15 @@ server:
 spring:
   application:
     name: library-events-producer-v2
+  # Default profile when none is provided. Override with:
+  #   --spring.profiles.active=stage   (CLI)
+  #   SPRING_PROFILES_ACTIVE=prod      (env var)
+  profiles:
+    default: dev
   kafka:
-    bootstrap-servers: localhost:9092
+    # Common Kafka settings shared by all environments.
+    # The topic name is the same across every profile.
+    # Only bootstrap-servers is environment-specific (see application-<profile>.yml).
     template:
       default-topic: library-events
     producer:
